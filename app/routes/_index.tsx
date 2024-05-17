@@ -1,4 +1,10 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from '@remix-run/node';
+import { useBlogs } from '~/hooks/useBlogs';
+import { Link } from '@remix-run/react';
+import useScrolling from '~/hooks/useScrolling';
+import { useMemo } from 'react';
+import { Header } from '~/components/Header';
+
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,34 +14,39 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+
+  const blogs = useBlogs();
+
+  const ids = useMemo(() => {
+    return (blogs.length) ? blogs.map(item => item.blog_id) : [];
+  }, [blogs]);
+
+
+  const { handleSetCurrent, next, prev } = useScrolling({ ids });
+
+  const imgStyle = {
+    backgroundPosition: 'center center',
+    backgroundSize: 'cover',
+    backgroundImage: 'url(https://picsum.photos/200/300)'
+  };
+
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
+    <>
+      <Header next={next} prev={prev} />
       <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
+      {blogs.map(item => (
+        <li key={item.blog_id} className="w-full p-0" id={`blog-${item.blog_id}`}>
+          <Link to={`/blog/${item.blog_id}`}>
+            <div className="bg-slate-100 h-screen" style={imgStyle}>
+              <h2 className="w-full h-full flex items-center justify-center">
+                <span className="bg-black text-white uppercase hover:italic">{`${item.blog_id} - ${item.heading}`}</span>
+              </h2>
+            </div>
+          </Link>
         </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
+      ))}
       </ul>
-    </div>
+    </>
   );
 }
